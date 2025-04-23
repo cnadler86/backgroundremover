@@ -44,14 +44,25 @@ Please note that when you first run the program, it will check to see if you hav
 
 It is also possible to run this without installing it via pip, just clone the git to local start a virtual env and install requirements and run
 ```bash
+# The following command runs the background remover without installing it via pip.
+# It uses the Python module `backgroundremover.cmd.cli` to process a video file.
+# - `-i` specifies the input video file.
+# - `-mk` creates a matte key file (green screen overlay).
+# - `-o` specifies the output file.
 python -m backgroundremover.cmd.cli -i "video.mp4" -mk -o "output.mov"
 ```
 and for windows
 ```bash
+# For Windows users, the same command can be run using `python.exe` instead of `python`.
 python.exe -m backgroundremover.cmd.cli -i "video.mp4" -mk -o "output.mov"
 ```
 ### Installation using Docker
 ```bash
+# The following commands demonstrate how to install and use the tool with Docker.
+# 1. Clone the repository from GitHub.
+# 2. Navigate to the cloned directory.
+# 3. Build a Docker image named `bgremover`.
+# 4. Create an alias for the Docker command to simplify usage.
 git clone https://github.com/nadermx/backgroundremover.git
 cd backgroundremover
 docker build -t bgremover .
@@ -63,6 +74,9 @@ alias backgroundremover='docker run -it --rm -v "$(pwd):/tmp" bgremover:latest'
 Remove the background from a local file image
 
 ```bash
+# The following command removes the background from a local image file.
+# - `-i` specifies the input image file.
+# - `-o` specifies the output file with the background removed.
 backgroundremover -i "/path/to/image.jpeg" -o "output.png"
 ```
 ### Process all images in a folder
@@ -72,6 +86,10 @@ You can now remove backgrounds from all supported image or video files in a fold
 ### Example: Folder of Images
 
 ```bash
+# The following command processes all images in a folder to remove their backgrounds.
+# - `-if` specifies the input folder containing images.
+# - `-of` specifies the output folder for processed images.
+# If `-of` is not provided, the output files are saved in the input folder with a prefix `output_`.
 backgroundremover -if "/path/to/image-folder" -of "/path/to/output-folder"
 ```
 
@@ -232,7 +250,7 @@ We made it our own package after merging together parts of others, adding in a f
 
 - Copyright (c) 2021-present [Johnathan Nader](https://github.com/nadermx)
 - Copyright (c) 2020-present [Lucas Nestler](https://github.com/ClashLuke)
-- Copyright (c) 2020-present [Dr. Tim Scarfe](https://github.com/ecsplendid)
+Copyright (c) 2020-present [Dr. Tim Scarfe](https://github.com/ecsplendid)
 - Copyright (c) 2020-present [Daniel Gatis](https://github.com/danielgatis)
 
 Code Licensed under [MIT License](./LICENSE.txt)

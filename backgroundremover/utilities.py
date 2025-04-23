@@ -335,3 +335,73 @@ def transparentvideooverimage(output, overlay, file_path,
     except PermissionError:
         pass
     return
+
+
+def transparentvideo_bluescreen(output, file_path,
+                     worker_nodes,
+                     gpu_batchsize,
+                     model_name,
+                     frame_limit=-1,
+                     prefetched_batches=4,
+                     framerate=-1):
+    temp_dir = tempfile.TemporaryDirectory()
+    tmpdirname = Path(temp_dir.name)
+    temp_file = os.path.abspath(os.path.join(tmpdirname, "matte.mp4"))
+    matte_key(temp_file, file_path,
+              worker_nodes,
+              gpu_batchsize,
+              model_name,
+              frame_limit,
+              prefetched_batches,
+              framerate)
+    print("Starting blue-screen merge")
+    cmd = [
+        'ffmpeg', '-y', '-i', file_path, '-i', temp_file, '-filter_complex',
+        '[1][0]scale2ref[mask][main];[main][mask]alphamerge=shortest=1,format=rgba,colorchannelmixer=aa=0.5:bb=1', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-shortest', output
+    ]
+
+    sp.run(cmd)
+    print("Process finished")
+    try:
+        temp_dir.cleanup()
+    except PermissionError:
+        pass
+    return
+
+
+def transparentvideo_bluescreen_compressed(output, file_path,
+                     worker_nodes,
+                     gpu_batchsize,
+                     model_name,
+                     frame_limit=-1,
+                     prefetched_batches=4,
+                     framerate=-1,
+                     mode="slow"):
+    temp_dir = tempfile.TemporaryDirectory()
+    tmpdirname = Path(temp_dir.name)
+    temp_file = os.path.abspath(os.path.join(tmpdirname, "matte.mp4"))
+    matte_key(temp_file, file_path,
+              worker_nodes,
+              gpu_batchsize,
+              model_name,
+              frame_limit,
+              prefetched_batches,
+              framerate)
+    print("Starting blue-screen merge with compression")
+
+    # Adjust preset based on mode
+    preset = "slow" if mode == "slow" else "fast"
+
+    cmd = [
+        'ffmpeg', '-y', '-i', file_path, '-i', temp_file, '-filter_complex',
+        '[1][0]scale2ref[mask][main];[main][mask]alphamerge=shortest=1,format=rgba,colorchannelmixer=aa=0.5:bb=1',
+        '-c:v', 'libx264', '-crf', '0', '-preset', preset, '-pix_fmt', 'yuv420p', '-shortest', output
+    ]
+
+    sp.run(cmd)
+    print("Process finished")
+    try:
+        temp_dir.cleanup()
+    except PermissionError:
+        pass
+    return

@@ -148,6 +148,35 @@ def main():
     )
 
     ap.add_argument(
+        "-tvb",
+        "--transparentvideo-bluescreen",
+        nargs="?",
+        const=True,
+        default=False,
+        type=lambda x: bool(strtobool(x)),
+        help="Output blue-screen video format mp4",
+    )
+
+    ap.add_argument(
+        "-tvbc",
+        "--transparentvideo-bluescreen-compressed",
+        nargs="?",
+        const=True,
+        default=False,
+        type=lambda x: bool(strtobool(x)),
+        help="Output compressed blue-screen video format mp4",
+    )
+
+    ap.add_argument(
+        "-mode",
+        "--compression-mode",
+        type=str,
+        choices=["slow", "fast"],
+        default="slow",
+        help="Compression mode for blue-screen compressed video (slow or fast)",
+    )
+
+    ap.add_argument(
         "-i",
         "--input",
         nargs="?",
@@ -261,6 +290,21 @@ def main():
                                                            model_name=args.model,
                                                            frame_limit=args.framelimit,
                                                            framerate=args.framerate)
+                elif args.transparentvideo_bluescreen:
+                    utilities.transparentvideo_bluescreen(output_path, input_path,
+                                                          worker_nodes=args.workernodes,
+                                                          gpu_batchsize=args.gpubatchsize,
+                                                          model_name=args.model,
+                                                          frame_limit=args.framelimit,
+                                                          framerate=args.framerate)
+                elif args.transparentvideo_bluescreen_compressed:
+                    utilities.transparentvideo_bluescreen_compressed(output_path, input_path,
+                                                                     worker_nodes=args.workernodes,
+                                                                     gpu_batchsize=args.gpubatchsize,
+                                                                     model_name=args.model,
+                                                                     frame_limit=args.framelimit,
+                                                                     framerate=args.framerate,
+                                                                     mode=args.compression_mode)
             elif is_image_file(f):
                 with open(input_path, "rb") as i, open(output_path, "wb") as o:
                     r = lambda i: i.buffer.read() if hasattr(i, "buffer") else i.read()
@@ -326,6 +370,21 @@ def main():
                                                    model_name=args.model,
                                                    frame_limit=args.framelimit,
                                                    framerate=args.framerate)
+        elif args.transparentvideo_bluescreen:
+            utilities.transparentvideo_bluescreen(os.path.abspath(args.output.name), os.path.abspath(args.input.name),
+                                                  worker_nodes=args.workernodes,
+                                                  gpu_batchsize=args.gpubatchsize,
+                                                  model_name=args.model,
+                                                  frame_limit=args.framelimit,
+                                                  framerate=args.framerate)
+        elif args.transparentvideo_bluescreen_compressed:
+            utilities.transparentvideo_bluescreen_compressed(os.path.abspath(args.output.name), os.path.abspath(args.input.name),
+                                                             worker_nodes=args.workernodes,
+                                                             gpu_batchsize=args.gpubatchsize,
+                                                             model_name=args.model,
+                                                             frame_limit=args.framelimit,
+                                                             framerate=args.framerate,
+                                                             mode=args.compression_mode)
 
     elif ext in [".jpg", ".jpeg", ".png"]:
         r = lambda i: i.buffer.read() if hasattr(i, "buffer") else i.read()
