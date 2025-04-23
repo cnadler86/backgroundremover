@@ -343,10 +343,18 @@ def transparentvideo_bluescreen(output, file_path,
                      model_name,
                      frame_limit=-1,
                      prefetched_batches=4,
-                     framerate=-1):
+                     framerate=-1,
+                     bg_color="blue"):
     temp_dir = tempfile.TemporaryDirectory()
     tmpdirname = Path(temp_dir.name)
     temp_file = os.path.abspath(os.path.join(tmpdirname, "matte.mp4"))
+    
+    # Get video information
+    probe = ffmpeg.probe(file_path)
+    video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+    width = int(video_info['width'])
+    height = int(video_info['height'])
+    
     matte_key(temp_file, file_path,
               worker_nodes,
               gpu_batchsize,
@@ -354,10 +362,18 @@ def transparentvideo_bluescreen(output, file_path,
               frame_limit,
               prefetched_batches,
               framerate)
-    print("Starting blue-screen merge")
+    print("Starting background color merge")
+
+    # Using the matte as a mask to blend between original video and solid color
     cmd = [
-        'ffmpeg', '-y', '-i', file_path, '-i', temp_file, '-filter_complex',
-        '[1][0]scale2ref[mask][main];[main][mask]alphamerge=shortest=1,format=rgba,colorchannelmixer=aa=0.5:bb=1', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-shortest', output
+        'ffmpeg', '-y',
+        '-i', file_path,      # Input 0: Original video
+        '-i', temp_file,      # Input 1: Matte video
+        '-f', 'lavfi',
+        '-i', f'color=c={bg_color}:s={width}x{height}:r=25',  # Input 2: Solid color with matching dimensions
+        '-filter_complex',
+        '[0:v][1:v]scale2ref[main][mask];[2:v][main]scale2ref=flags=neighbor[bg][main];[main][mask][bg]maskedmerge',
+        '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-shortest', output
     ]
 
     sp.run(cmd)
@@ -376,10 +392,18 @@ def transparentvideo_bluescreen_compressed(output, file_path,
                      frame_limit=-1,
                      prefetched_batches=4,
                      framerate=-1,
-                     mode="slow"):
+                     mode="slow",
+                     bg_color="blue"):
     temp_dir = tempfile.TemporaryDirectory()
     tmpdirname = Path(temp_dir.name)
     temp_file = os.path.abspath(os.path.join(tmpdirname, "matte.mp4"))
+    
+    # Get video information
+    probe = ffmpeg.probe(file_path)
+    video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+    width = int(video_info['width'])
+    height = int(video_info['height'])
+    
     matte_key(temp_file, file_path,
               worker_nodes,
               gpu_batchsize,
@@ -387,14 +411,20 @@ def transparentvideo_bluescreen_compressed(output, file_path,
               frame_limit,
               prefetched_batches,
               framerate)
-    print("Starting blue-screen merge with compression")
+    print("Starting background color merge with compression")
 
     # Adjust preset based on mode
     preset = "slow" if mode == "slow" else "fast"
 
+    # Using the matte as a mask to blend between original video and solid color
     cmd = [
-        'ffmpeg', '-y', '-i', file_path, '-i', temp_file, '-filter_complex',
-        '[1][0]scale2ref[mask][main];[main][mask]alphamerge=shortest=1,format=rgba,colorchannelmixer=aa=0.5:bb=1',
+        'ffmpeg', '-y',
+        '-i', file_path,      # Input 0: Original video
+        '-i', temp_file,      # Input 1: Matte video
+        '-f', 'lavfi',
+        '-i', f'color=c={bg_color}:s={width}x{height}:r=25',  # Input 2: Solid color with matching dimensions
+        '-filter_complex',
+        '[0:v][1:v]scale2ref[main][mask];[2:v][main]scale2ref=flags=neighbor[bg][main];[main][mask][bg]maskedmerge',
         '-c:v', 'libx264', '-crf', '0', '-preset', preset, '-pix_fmt', 'yuv420p', '-shortest', output
     ]
 

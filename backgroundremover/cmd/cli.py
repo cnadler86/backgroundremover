@@ -177,6 +177,15 @@ def main():
     )
 
     ap.add_argument(
+        "-bc",
+        "--background-color",
+        type=str,
+        choices=["blue", "green", "red", "white", "black"],
+        default="blue",
+        help="Background color for bluescreen output (blue, green, red, white, or black)",
+    )
+
+    ap.add_argument(
         "-i",
         "--input",
         nargs="?",
@@ -296,7 +305,8 @@ def main():
                                                           gpu_batchsize=args.gpubatchsize,
                                                           model_name=args.model,
                                                           frame_limit=args.framelimit,
-                                                          framerate=args.framerate)
+                                                          framerate=args.framerate,
+                                                          bg_color=args.background_color)
                 elif args.transparentvideo_bluescreen_compressed:
                     utilities.transparentvideo_bluescreen_compressed(output_path, input_path,
                                                                      worker_nodes=args.workernodes,
@@ -304,7 +314,8 @@ def main():
                                                                      model_name=args.model,
                                                                      frame_limit=args.framelimit,
                                                                      framerate=args.framerate,
-                                                                     mode=args.compression_mode)
+                                                                     mode=args.compression_mode,
+                                                                     bg_color=args.background_color)
             elif is_image_file(f):
                 with open(input_path, "rb") as i, open(output_path, "wb") as o:
                     r = lambda i: i.buffer.read() if hasattr(i, "buffer") else i.read()
@@ -376,7 +387,8 @@ def main():
                                                   gpu_batchsize=args.gpubatchsize,
                                                   model_name=args.model,
                                                   frame_limit=args.framelimit,
-                                                  framerate=args.framerate)
+                                                  framerate=args.framerate,
+                                                  bg_color=args.background_color)
         elif args.transparentvideo_bluescreen_compressed:
             utilities.transparentvideo_bluescreen_compressed(os.path.abspath(args.output.name), os.path.abspath(args.input.name),
                                                              worker_nodes=args.workernodes,
@@ -384,7 +396,8 @@ def main():
                                                              model_name=args.model,
                                                              frame_limit=args.framelimit,
                                                              framerate=args.framerate,
-                                                             mode=args.compression_mode)
+                                                             mode=args.compression_mode,
+                                                             bg_color=args.background_color)
 
     elif ext in [".jpg", ".jpeg", ".png"]:
         r = lambda i: i.buffer.read() if hasattr(i, "buffer") else i.read()
